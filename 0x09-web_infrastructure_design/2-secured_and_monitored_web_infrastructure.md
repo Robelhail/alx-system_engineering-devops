@@ -1,0 +1,17 @@
+Let me explain some specifics about this infrastructure:
+
+- I added **3 firewalls** to protect the servers from unauthorized access and malicious attacks. One firewall is placed between the internet and the load balancer, another one is placed between the load balancer and the web servers, and the third one is placed between the web servers and the database server. Firewalls are devices or software that filter incoming and outgoing network traffic based on predefined rules. ¹
+
+- I added **1 SSL certificate** to serve www.foobar.com over HTTPS. HTTPS is a secure version of HTTP that encrypts the data exchanged between the client and the server using SSL (Secure Sockets Layer) or TLS (Transport Layer Security) protocols. This ensures that the data is protected from eavesdropping, tampering, and impersonation. The SSL certificate is a digital document that proves the identity of the website and enables HTTPS communication.
+
+- I added **3 monitoring clients** (data collector for Sumologic or other monitoring services) to collect and send metrics and logs from the servers to a centralized monitoring service. Monitoring is used for observing the performance, availability, and health of the servers and applications. It helps to identify and troubleshoot issues, optimize resources, and improve user experience. The monitoring tool is collecting data by installing agents or clients on the servers that gather various metrics (such as CPU usage, memory usage, disk space, network traffic, etc.) and logs (such as application errors, access logs, audit logs, etc.) and send them to a remote server or cloud service for analysis and visualization.
+
+- If you want to monitor your web server QPS (queries per second), you need to enable access logging on your web server and configure your monitoring client to collect and send those logs to your monitoring service. Then you can use a query or a dashboard to calculate and display the QPS metric based on the number of requests in the logs.
+
+There are some issues with this infrastructure that you should be aware of:
+
+- Terminating SSL at the load balancer level is an issue because it exposes the traffic between the load balancer and the web servers to potential attacks. If someone manages to breach the firewall or compromise the network, they can intercept, modify, or inject data into the unencrypted HTTP traffic. A better practice is to use end-to-end encryption, where SSL is terminated at the web server level and HTTPS is used throughout the communication. 
+
+- Having only one MySQL server capable of accepting writes is an issue because it creates a single point of failure and a bottleneck for the database operations. If the MySQL server goes down or becomes overloaded, the entire application will stop working or suffer from poor performance. A better practice is to use a master-slave or master-master replication setup, where multiple MySQL servers can handle read and write requests and synchronize their data. This improves availability, scalability, and performance of the database layer. 
+
+- Having servers with all the same components (database, web server and application server) might be a problem because it violates the principle of separation of concerns and makes the servers more complex and harder to manage. A better practice is to use a multitier architecture, where each tier (presentation, business logic, and data storage) is separated into different servers or clusters. This improves modularity, maintainability, and security of the application.
