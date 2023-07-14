@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+# Configure HAproxy to accept encrypted traffic for subdomain www.chiaracaprasi.tech
+
 global
         log /dev/log    local0
         log /dev/log    local1 notice
@@ -33,19 +36,23 @@ defaults
         errorfile 503 /etc/haproxy/errors/503.http
         errorfile 504 /etc/haproxy/errors/504.http
 
-#--munyasi.tech-params-begin--
-backend munyasi.tech-backend
+frontend haproxy_balancer
+         bind *:80
+         mode http
+         default_backend web-servers
+
+frontend https
+    bind *:443 ssl crt /etc/letsencrypt/live/www.ambes.tech/fullchain.pem
+    http-request add-header X-Forwarded-Proto https
+    default_backend web-backend
+
+backend web-servers
         balance roundrobin
-        redirect scheme https if !{ ssl_fc }
-        server 20639-web-01 3.227.217.150:80 check
-        server 20639-web-02 3.95.27.202:80 check
+        option forwardfor
+        server 126063-web-01 35.174.200.148:80 check
+        server 126063-web-02 107.20.20.169:80 check
 
-frontend www-http-munyasi.tech-frontend
-        bind *:80
-        bind *:443 ssl crt /etc/haproxy/certs/munyasi.tech.pem
-        acl letsencrypt-acl path_beg /.well-known/acme-challenge/
-        # reqadd X-Forwarded-Proto:\ http
-        default_backend munyasi.tech-backend
-
-backend letsencrypt-backend
-   server letsencrypt 127.0.0.1:54321
+backend web-backend
+        balance roundrobin
+        server 126063-web-01 35.174.200.148:80 check
+        server 126063-web-02 107.20.20.169:80 check
